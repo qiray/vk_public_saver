@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main() {
+func getRequest() {
 	response, err := http.Get("http://golang.org/")
 	if err != nil {
 		fmt.Printf("%s", err)
@@ -21,6 +21,10 @@ func main() {
 		}
 		fmt.Printf("%s\n", string(contents))
 	}
+}
+
+func main() {
+	// getRequest()
 	parseJSON()
-	dbExample()
+	// dbExample()
 }
