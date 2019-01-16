@@ -7,11 +7,13 @@ import (
 )
 
 func parseJSON() {
-	// TODO: different types
+	// TODO: improve parsing different types?
 	type mmn struct {
 		Rows []struct {
 			ID   string `json:"id"`
 			Type string `json:"type"`
+			URL  string `json:"url"`
+			Src  string `json:"src"`
 		} `json:"rows"`
 	}
 
@@ -37,8 +39,13 @@ func parseJSON() {
 		log.Fatal("error")
 	}
 
-	// итерируем
 	for _, row := range app.Rows {
-		fmt.Println(row.ID, row.Type)
+		info := row.ID + " " + row.Type
+		if row.Type == "url" {
+			info += " " + row.URL
+		} else if row.Type == "image" {
+			info += " " + row.Src
+		}
+		fmt.Println(info)
 	}
 }
