@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 func parseJSON() {
@@ -48,4 +50,17 @@ func parseJSON() {
 		}
 		fmt.Println(info)
 	}
+}
+
+func loadSettings(settingsFile string) (AppSettings, error) {
+	jsonFile, err := os.Open(settingsFile)
+	var settings = AppSettings{}
+	if err != nil {
+		fmt.Println(err)
+		return settings, err
+	}
+	defer jsonFile.Close() //close file later
+	data, _ := ioutil.ReadAll(jsonFile)
+	err = json.Unmarshal(data, &settings)
+	return settings, err
 }

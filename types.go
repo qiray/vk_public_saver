@@ -114,3 +114,13 @@ type Post struct {
 	} `json:"views"`
 	IsFavorite bool `json:"is_favorite"`
 }
+
+//AppSettings - struct for application settings
+type AppSettings struct {
+	AppID       string `json:"app_id"`
+	AppSecret   string `json:"app_secret"`
+	Settings    string `json:"settings"`
+	RedirectURL string `json:"redirect_url"`
+	Display     string `json:"display"`
+	APIVersion  string `json:"api_version"`
+}
