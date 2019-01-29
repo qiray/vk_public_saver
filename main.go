@@ -5,29 +5,43 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 )
 
-func getRequest() {
-	response, err := http.Get("http://golang.org/")
+func getRequest(url string) ([]byte, error) {
+	response, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("%s", err)
-		os.Exit(1)
-	} else {
-		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-			os.Exit(1)
-		}
-		fmt.Printf("%s\n", string(contents))
+		os.Exit(2)
 	}
+	defer response.Body.Close()
+	return ioutil.ReadAll(response.Body)
 }
 
 func login(settings AppSettings) {
 	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope" +
 		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
 		"&display=" + settings.Display + "&response_type=token"
-	print(path)
+	// print(path, "\n")
+	contents, err := getRequest(path)
+	if err != nil {
+		fmt.Printf("%s", err)
+		os.Exit(3)
+	}
+	contentsString := string(contents)
+	iphRegex := regexp.MustCompile("ip_h.*value=\"(.*?)\"")
+	lghRegex := regexp.MustCompile("lg_h.*value=\"(.*?)\"")
+	res := iphRegex.FindStringSubmatch(contentsString)
+	var iph, lgh string
+	if res != nil {
+		iph = res[1]
+	}
+	res = lghRegex.FindStringSubmatch(contentsString)
+	if res != nil {
+		lgh = res[1]
+	}
+	fmt.Printf("%s %s\n", iph, lgh)
+
 }
 
 func main() {
