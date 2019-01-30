@@ -51,7 +51,8 @@ func main() {
 		os.Exit(1)
 	}
 	login(settings)
-	// getRequest()
+	userdata, _ := loadJSONFileMap("userdata.json")
+	fmt.Println(userdata)
 	// parseJSON()
 	// dbExample()
 }
