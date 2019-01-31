@@ -18,7 +18,7 @@ func getRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(response.Body)
 }
 
-func login(settings AppSettings) {
+func login(settings AppSettings, userdata map[string]string) {
 	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope" +
 		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
 		"&display=" + settings.Display + "&response_type=token"
@@ -40,8 +40,8 @@ func login(settings AppSettings) {
 	if res != nil {
 		lgh = res[1]
 	}
-	fmt.Printf("%s %s\n", iph, lgh)
-
+	url := "https://login.vk.com/?act=login&_origin=http://m.vk.com&ip_h=" + iph + "&lg_h=" + lgh + "&role=pda&utf8=1"
+	fmt.Printf("%s\n", url)
 }
 
 func main() {
@@ -50,9 +50,10 @@ func main() {
 		fmt.Println("Settings load failed. Closing...")
 		os.Exit(1)
 	}
-	login(settings)
 	userdata, _ := loadJSONFileMap("userdata.json")
 	fmt.Println(userdata)
+	login(settings, userdata)
+
 	// parseJSON()
 	// dbExample()
 }
