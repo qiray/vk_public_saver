@@ -120,6 +120,7 @@ type AppSettings struct {
 	AppID       string `json:"app_id"`
 	Settings    string `json:"settings"`
 	RedirectURL string `json:"redirect_url"`
-	Display     string `json:"display"`
 	APIVersion  string `json:"api_version"`
+	userdata    map[string]string
+	token       string
 }

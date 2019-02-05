@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"os"
-	"regexp"
-	"strings"
+
+	"golang.org/x/net/html"
 )
 
 //TODO: read https://github.com/Vorkytaka/easyvk-go
@@ -23,62 +24,92 @@ func getRequest(url string) ([]byte, error) {
 	return ioutil.ReadAll(response.Body)
 }
 
-func login(settings AppSettings, userdata map[string]string) {
-	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope" +
-		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
-		"&display=" + settings.Display + "&response_type=token"
-	print(path, "\n")
-	contents, err := getRequest("http://m.vk.com")
-	if err != nil {
-		fmt.Printf("%s", err)
-		os.Exit(3)
-	}
-	contentsString := string(contents)
-	loginRegex := regexp.MustCompile("action=\"(.*?)\"")
-	res := loginRegex.FindStringSubmatch(contentsString)
-	var loginURL string
-	if res != nil {
-		loginURL = res[1]
-	}
-	print(loginURL, "\n")
-	// loginURL := "https://login.vk.com/?act=login&_origin=http://m.vk.com&ip_h=" + iph + "&lg_h=" + lgh + "&role=pda&utf8=1"
-	// https://login.vk.com/?act=login&_origin=https://m.vk.com&ip_h=c6d1d61811616206c5&lg_h=c248a9dbf718faf449&role=pda&utf8=1"
-	// response, err := http.PostForm(loginURL, url.Values{"email": {userdata["email"]}, "pass": {userdata["pass"]}})
-	// if err != nil {
-	// 	fmt.Printf("%s", err)
-	// 	os.Exit(4)
-	// }
-	// defer response.Body.Close()
-	// contents, _ = ioutil.ReadAll(response.Body)
-	// fmt.Printf("%s\n", contents)
+//Based on https://github.com/Vorkytaka/easyvk-go/blob/master/easyvk/
+func parseForm(body io.ReadCloser) (url.Values, string) {
+	//Parse vk login form
+	tokenizer := html.NewTokenizer(body)
 
-	params := url.Values{}
-	params.Set("email", userdata["email"])
-	params.Set("pass", userdata["pass"])
-	postData := strings.NewReader(params.Encode())
+	u := ""
+	keys := []string{"_origin", "to", "ip_h", "lg_h"} //data for auth
+	formData := map[string]string{}
+
+	end := false
+	for !end {
+		tag := tokenizer.Next()
+
+		switch tag {
+		case html.ErrorToken:
+			end = true
+		case html.StartTagToken, html.SelfClosingTagToken:
+			switch token := tokenizer.Token(); token.Data {
+			case "form":
+				for _, attr := range token.Attr {
+					if attr.Key == "action" {
+						u = attr.Val
+					}
+				}
+			case "input":
+				for _, key := range keys {
+					if token.Attr[1].Val == key {
+						formData[key] = token.Attr[2].Val
+					}
+				}
+			}
+		}
+	}
+
+	args := url.Values{}
+
+	for key, val := range formData {
+		args.Add(key, val)
+	}
+
+	return args, u
+}
+
+func login(settings *AppSettings) {
+	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope=" +
+		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
+		"&display=wap&response_type=token"
 
 	jar, _ := cookiejar.New(nil)
-	client := &http.Client{Jar: jar, CheckRedirect: nil}
-	request, err := http.NewRequest("POST", loginURL, postData)
-	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0")
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	response, err := client.Do(request)
-	if err != nil {
-		fmt.Printf("%s", err)
-		os.Exit(4)
+	client := &http.Client{
+		Jar: jar,
 	}
-	defer response.Body.Close()
-	contents, _ = ioutil.ReadAll(response.Body)
+	resp, err := client.Get(path)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	args, u := parseForm(resp.Body)
 
-	fmt.Printf("%d\n", response.StatusCode)
-	fmt.Printf("%s\n", contents)
+	args.Add("email", settings.userdata["email"])
+	args.Add("pass", settings.userdata["pass"])
 
-	// data := []byte(`{"foo":"bar"}`)
-	// r := bytes.NewReader(data)
-	// resp, err := http.Post("http://example.com/upload", "application/json", r)
-	// if err != nil {
-	// 	return
-	// }
+	resp, err = client.PostForm(u, args)
+	if err != nil {
+		return
+	}
+
+	if resp.Request.URL.Path != "/blank.html" {
+		args, u := parseForm(resp.Body)
+		resp, err := client.PostForm(u, args)
+		if err != nil {
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.Request.URL.Path != "/blank.html" {
+			return
+		}
+	}
+
+	urlArgs, err := url.ParseQuery(resp.Request.URL.Fragment)
+	if err != nil {
+		return
+	}
+	token := urlArgs["access_token"][0]
+	settings.token = token
 }
 
 func main() {
@@ -88,8 +119,9 @@ func main() {
 		os.Exit(1)
 	}
 	userdata, _ := loadJSONFileMap("userdata.json")
-	fmt.Println(userdata)
-	login(settings, userdata)
+	settings.userdata = userdata
+	login(&settings)
+	print(settings.token, "\n")
 
 	// parseJSON()
 	// dbExample()
