@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -122,6 +123,23 @@ func main() {
 	settings.userdata = userdata
 	login(&settings)
 	print(settings.token, "\n")
+
+	jar, _ := cookiejar.New(nil)
+	client := &http.Client{
+		Jar: jar,
+	}
+	path := "https://api.vk.com/method/wall.get?owner_id=-89009548&v=" + settings.APIVersion + "&access_token=" + settings.token
+	resp, err := client.Get(path)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	responseData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	responseString := string(responseData)
+	fmt.Println(responseString)
 
 	// parseJSON()
 	// dbExample()
