@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -71,6 +72,7 @@ func login(settings *AppSettings) {
 	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope=" +
 		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
 		"&display=wap&response_type=token"
+	cookies := make(map[string][]*http.Cookie)
 
 	jar, _ := cookiejar.New(nil)
 	settings.client = &http.Client{
@@ -110,6 +112,25 @@ func login(settings *AppSettings) {
 	}
 	token := urlArgs["access_token"][0]
 	settings.token = token
+	updateCookies(cookies, jar, resp)
+	saveCookies("cookies.txt", cookies)
+
+}
+
+func updateCookies(cookies map[string][]*http.Cookie, jar *cookiejar.Jar, resp *http.Response) {
+	cookies[resp.Request.URL.String()] = jar.Cookies(resp.Request.URL)
+}
+
+func saveCookies(filepath string, cookies map[string][]*http.Cookie) {
+	data, _ := json.Marshal(cookies)
+	ioutil.WriteFile(filepath, data, 0644)
+}
+
+func loadCookies(filepath string, jar *cookiejar.Jar, resp *http.Response) {
+	// result, err := loadJSONFileMap(filepath)
+	// if err != nil {
+
+	// }
 }
 
 func wallGet(settings AppSettings) {
