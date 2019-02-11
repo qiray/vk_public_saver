@@ -73,10 +73,10 @@ func login(settings *AppSettings) {
 		"&display=wap&response_type=token"
 
 	jar, _ := cookiejar.New(nil)
-	client := &http.Client{
+	settings.client = &http.Client{
 		Jar: jar,
 	}
-	resp, err := client.Get(path)
+	resp, err := settings.client.Get(path)
 	if err != nil {
 		return
 	}
@@ -86,14 +86,14 @@ func login(settings *AppSettings) {
 	args.Add("email", settings.userdata["email"])
 	args.Add("pass", settings.userdata["pass"])
 
-	resp, err = client.PostForm(u, args)
+	resp, err = settings.client.PostForm(u, args)
 	if err != nil {
 		return
 	}
 
 	if resp.Request.URL.Path != "/blank.html" {
 		args, u := parseForm(resp.Body)
-		resp, err := client.PostForm(u, args)
+		resp, err := settings.client.PostForm(u, args)
 		if err != nil {
 			return
 		}
@@ -113,12 +113,8 @@ func login(settings *AppSettings) {
 }
 
 func wallGet(settings AppSettings) {
-	jar, _ := cookiejar.New(nil)
-	client := &http.Client{
-		Jar: jar,
-	}
 	path := "https://api.vk.com/method/wall.get?owner_id=-89009548&v=" + settings.APIVersion + "&access_token=" + settings.token
-	resp, err := client.Get(path)
+	resp, err := settings.client.Get(path)
 	if err != nil {
 		return
 	}

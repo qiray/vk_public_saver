@@ -1,5 +1,7 @@
 package main
 
+import "net/http"
+
 //TODO: read https://vk.com/dev/attachments_w for more info about attachments
 /*
 5. Документ (type = doc)
@@ -122,5 +124,6 @@ type AppSettings struct {
 	RedirectURL string `json:"redirect_url"`
 	APIVersion  string `json:"api_version"`
 	userdata    map[string]string
+	client      *http.Client
 	token       string
 }
