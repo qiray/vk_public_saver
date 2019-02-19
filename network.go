@@ -67,20 +67,22 @@ func parseForm(body io.ReadCloser) (url.Values, string) {
 	return args, u
 }
 
-func login(settings *AppSettings) {
-	//TODO: return bool and use cookies
+func login(settings *AppSettings) bool {
+
 	path := "https://oauth.vk.com/authorize?client_id=" + settings.AppID + "&scope=" +
 		settings.Settings + "&v=" + settings.APIVersion + "&redirect_uri=" + settings.RedirectURL +
 		"&display=wap&response_type=token"
 	cookies := make(map[string][]*http.Cookie)
 
 	jar, _ := cookiejar.New(nil)
+	// loadCookies("cookies.txt", jar) //TODO: use cookies (maybe error appears because of expires = 0)
 	settings.client = &http.Client{
 		Jar: jar,
 	}
 	resp, err := settings.client.Get(path)
 	if err != nil {
-		return
+		fmt.Println(err, 1)
+		return false
 	}
 	defer resp.Body.Close()
 	args, u := parseForm(resp.Body)
@@ -90,35 +92,40 @@ func login(settings *AppSettings) {
 
 	resp, err = settings.client.PostForm(u, args)
 	if err != nil {
-		return
+		fmt.Println("Failed to login.")
+		return false
 	}
 
 	if resp.Request.URL.Path != "/blank.html" {
 		args, u := parseForm(resp.Body)
 		resp, err := settings.client.PostForm(u, args)
 		if err != nil {
-			return
+			fmt.Println(err, 3)
+			return false
 		}
 		defer resp.Body.Close()
 
 		if resp.Request.URL.Path != "/blank.html" {
-			return
+			fmt.Println(resp.Request.URL, 4)
+			return false
 		}
 	}
 
 	urlArgs, err := url.ParseQuery(resp.Request.URL.Fragment)
 	if err != nil {
-		return
+		fmt.Println(err, 5)
+		return false
 	}
 	token := urlArgs["access_token"][0]
 	settings.token = token
 	updateCookies(cookies, jar, resp)
 	saveCookies("cookies.txt", cookies)
-
+	return true
 }
 
 func updateCookies(cookies map[string][]*http.Cookie, jar *cookiejar.Jar, resp *http.Response) {
-	cookies[resp.Request.URL.String()] = jar.Cookies(resp.Request.URL)
+	url := resp.Request.URL
+	cookies[url.Scheme+"://"+url.Hostname()] = jar.Cookies(resp.Request.URL)
 }
 
 func saveCookies(filepath string, cookies map[string][]*http.Cookie) {
@@ -126,11 +133,24 @@ func saveCookies(filepath string, cookies map[string][]*http.Cookie) {
 	ioutil.WriteFile(filepath, data, 0644)
 }
 
-func loadCookies(filepath string, jar *cookiejar.Jar, resp *http.Response) {
-	// result, err := loadJSONFileMap(filepath)
-	// if err != nil {
-
-	// }
+func loadCookies(filepath string, jar *cookiejar.Jar) {
+	data, err := readFile(filepath)
+	if err != nil {
+		return
+	}
+	cookies := make(map[string][]*http.Cookie)
+	err = json.Unmarshal([]byte(data), &cookies)
+	if err != nil {
+		return
+	}
+	for key, val := range cookies {
+		url, err := url.Parse(key)
+		if err != nil {
+			print(111)
+			continue
+		}
+		jar.SetCookies(url, val)
+	}
 }
 
 func wallGet(settings AppSettings) {

@@ -19,6 +19,7 @@ func setCredentials(settings *AppSettings) {
 
 	fmt.Print("Enter Password: ")
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	print("\n") //Add newline
 	if err != nil {
 		fmt.Println("Failed to get password")
 		return
@@ -44,9 +45,9 @@ func main() {
 		setCredentials(&settings)
 	}
 
-	login(&settings)
+	_ = login(&settings)
 	print(settings.token, "\n")
-	wallGet(settings)
+	// wallGet(settings)
 
 	// dbExample()
 }
