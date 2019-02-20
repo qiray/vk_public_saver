@@ -47,6 +47,7 @@ func main() {
 
 	_ = login(&settings)
 	print(settings.token, "\n")
+	getPosts(settings)
 	// wallGet(settings)
 
 	// dbExample()

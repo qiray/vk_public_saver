@@ -127,3 +127,10 @@ type AppSettings struct {
 	client      *http.Client
 	token       string
 }
+
+//PostsSaverConfig - config for saving vk posts
+type PostsSaverConfig struct {
+	count   int
+	offset  int
+	pertime int
+}

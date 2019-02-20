@@ -167,3 +167,55 @@ func wallGet(settings AppSettings) {
 	responseString := string(responseData)
 	fmt.Println(responseString)
 }
+
+func getPosts(settings AppSettings) {
+	var postsSaverConfig = PostsSaverConfig{count: 10, offset: 0, pertime: 10}
+	result := true
+	totalNumber := postsSaverConfig.count * postsSaverConfig.pertime
+	print(result, totalNumber, "\n")
+	fmt.Println(postsSaverConfig)
+	// while ($numberOfPosts > 0 and $result) {
+	// 	echo "Saving posts, offset: $postsSaverConfig->offset\n";
+	// 	$code = urlencode('var result = [];
+	// 		var i = 0;
+	// 		var max_posts = ' . $numberOfPosts . ';
+	// 		while (i < ' . $postsSaverConfig->pertime . ' && max_posts > 0) {
+	// 			result.push(API.wall.get({
+	// 				owner_id: ' . $config->publicId . ',
+	// 				count: ' . $postsSaverConfig->count . ',
+	// 				offset: ' . $postsSaverConfig->count . '*i+' . $postsSaverConfig->offset . ',
+	// 				filter: "all",
+	// 				access_token: "' . $token . '",
+	// 				v : ' . $config->app['API_VERSION'] . ',
+	// 				}));
+	// 			max_posts = max_posts - ' . $postsSaverConfig->count . ';
+	// 			i = i+1;
+	// 		};
+	// 		return result;');
+	// 	numberOfPosts -= totalNumber;
+	// 	curl_setopt($curl, CURLOPT_URL, 'https://api.vk.com/method/execute?code=' . $code . '&v=' . $config->app['API_VERSION'] . '&access_token=' . $token);
+	// 	$response = curl_exec($curl);
+	// 	$response = json_decode($response);//раскодируем запрос для получения объекта, а не строки
+	// 	if (isset($response->error)) {
+	// 		$result = false;
+	// 		echo 'Error: ' . $response->error->error_msg . 'Code: ' . $response->error->error_mcode . "\n";
+	// 	} else { //если ошибки нет, просматриваем полученные данные
+	// 		if (is_null($response) or gettype($response->response) != 'array')
+	// 			echo 'Warning! Response is ' . gettype($response->response). "\n";
+	// 		else {
+	// 			if (count($response->response) == 0) {
+	// 				$result = false;
+	// 			} else
+	// 				foreach ($response->response as $i) { //просматриваем ответ как массив
+	// 					if (isset($i->signer_id))
+	// 						fwrite ($fp, authorById($i->signer_id) . ";" . $i->id . ";" . $i->date . ";\n");
+	// 					else
+	// 						fwrite ($fp, ";" . $i->id . ";" . $i->date . ";\n");
+	// 				}
+	// 		}
+	// 	}
+	// 	$postsSaverConfig->offset += $totalNumber; //сдвигаемся в списке постов
+	// 	time.Sleep(250000 * time.Millisecond)
+	// }
+	print("Done\n")
+}
