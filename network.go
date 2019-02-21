@@ -10,6 +10,8 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os"
+	"strconv"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -168,54 +170,57 @@ func wallGet(settings AppSettings) {
 	fmt.Println(responseString)
 }
 
-func getPosts(settings AppSettings) {
-	var postsSaverConfig = PostsSaverConfig{count: 10, offset: 0, pertime: 10}
-	result := true
-	totalNumber := postsSaverConfig.count * postsSaverConfig.pertime
-	print(result, totalNumber, "\n")
-	fmt.Println(postsSaverConfig)
-	// while ($numberOfPosts > 0 and $result) {
-	// 	echo "Saving posts, offset: $postsSaverConfig->offset\n";
-	// 	$code = urlencode('var result = [];
-	// 		var i = 0;
-	// 		var max_posts = ' . $numberOfPosts . ';
-	// 		while (i < ' . $postsSaverConfig->pertime . ' && max_posts > 0) {
-	// 			result.push(API.wall.get({
-	// 				owner_id: ' . $config->publicId . ',
-	// 				count: ' . $postsSaverConfig->count . ',
-	// 				offset: ' . $postsSaverConfig->count . '*i+' . $postsSaverConfig->offset . ',
-	// 				filter: "all",
-	// 				access_token: "' . $token . '",
-	// 				v : ' . $config->app['API_VERSION'] . ',
-	// 				}));
-	// 			max_posts = max_posts - ' . $postsSaverConfig->count . ';
-	// 			i = i+1;
-	// 		};
-	// 		return result;');
-	// 	numberOfPosts -= totalNumber;
-	// 	curl_setopt($curl, CURLOPT_URL, 'https://api.vk.com/method/execute?code=' . $code . '&v=' . $config->app['API_VERSION'] . '&access_token=' . $token);
-	// 	$response = curl_exec($curl);
-	// 	$response = json_decode($response);//раскодируем запрос для получения объекта, а не строки
-	// 	if (isset($response->error)) {
-	// 		$result = false;
-	// 		echo 'Error: ' . $response->error->error_msg . 'Code: ' . $response->error->error_mcode . "\n";
-	// 	} else { //если ошибки нет, просматриваем полученные данные
-	// 		if (is_null($response) or gettype($response->response) != 'array')
-	// 			echo 'Warning! Response is ' . gettype($response->response). "\n";
-	// 		else {
-	// 			if (count($response->response) == 0) {
-	// 				$result = false;
-	// 			} else
-	// 				foreach ($response->response as $i) { //просматриваем ответ как массив
-	// 					if (isset($i->signer_id))
-	// 						fwrite ($fp, authorById($i->signer_id) . ";" . $i->id . ";" . $i->date . ";\n");
-	// 					else
-	// 						fwrite ($fp, ";" . $i->id . ";" . $i->date . ";\n");
-	// 				}
-	// 		}
-	// 	}
-	// 	$postsSaverConfig->offset += $totalNumber; //сдвигаемся в списке постов
-	// 	time.Sleep(250000 * time.Millisecond)
-	// }
+func getPosts(settings AppSettings, publicID string) {
+	count := 10
+	offset := 0
+	pertime := 10
+	// result := true
+	totalNumber := count * pertime
+	numberOfPosts := 2147483647
+
+	for true {
+		print("Saving posts, offset: ", offset, "\n")
+		code := `
+		var result = [];
+		var i = 0;
+		var max_posts = ` + strconv.Itoa(numberOfPosts) + `;
+		while (i < ` + strconv.Itoa(pertime) + ` && max_posts > 0) {
+			result.push(API.wall.get({
+				owner_id: ` + publicID + `,
+				count: ` + strconv.Itoa(count) + `,
+				offset: ` + strconv.Itoa(count) + `*i+` + strconv.Itoa(offset) + `,
+				filter: "all",
+				v : ` + settings.APIVersion + `,
+				}));
+			max_posts = max_posts - ` + strconv.Itoa(count) + `;
+			i = i+1;
+		};
+		return result;`
+		numberOfPosts -= totalNumber
+		code = url.QueryEscape(code)
+		path := "https://api.vk.com/method/execute?code=" + code + "&v=" + settings.APIVersion + "&access_token=" + settings.token
+		resp, err := settings.client.Get(path)
+		if err != nil {
+			fmt.Println(err, 1)
+			return
+		}
+		defer resp.Body.Close()
+		responseData, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println(err, 2)
+			return
+		}
+		responseString := string(responseData)
+		var p PostsResponse
+		err = json.Unmarshal([]byte(responseString), &p)
+		if err != nil {
+			fmt.Println(err, 3)
+		}
+
+		offset += totalNumber
+		time.Sleep(250 * time.Millisecond)
+		break //TODO: make correct loop finish
+
+	}
 	print("Done\n")
 }

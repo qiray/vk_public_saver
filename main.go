@@ -47,8 +47,6 @@ func main() {
 
 	_ = login(&settings)
 	print(settings.token, "\n")
-	getPosts(settings)
-	// wallGet(settings)
-
+	getPosts(settings, "-89009548")
 	// dbExample()
 }

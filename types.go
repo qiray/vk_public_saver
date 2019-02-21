@@ -117,6 +117,14 @@ type Post struct {
 	IsFavorite bool `json:"is_favorite"`
 }
 
+//PostsResponse - response struct
+type PostsResponse struct {
+	Response []struct {
+		Count int    `json:"count"`
+		Items []Post `json:"items"`
+	} `json:"response"`
+}
+
 //AppSettings - struct for application settings
 type AppSettings struct {
 	AppID       string `json:"app_id"`
@@ -126,11 +134,4 @@ type AppSettings struct {
 	userdata    map[string]string
 	client      *http.Client
 	token       string
-}
-
-//PostsSaverConfig - config for saving vk posts
-type PostsSaverConfig struct {
-	count   int
-	offset  int
-	pertime int
 }
