@@ -171,14 +171,14 @@ func wallGet(settings AppSettings) {
 }
 
 func getPosts(settings AppSettings, publicID string) {
-	count := 10
+	count := 50
 	offset := 0
-	pertime := 10
-	// result := true
+	pertime := 20
 	totalNumber := count * pertime
 	numberOfPosts := 2147483647
+	finished := false
 
-	for true {
+	for !finished {
 		print("Saving posts, offset: ", offset, "\n")
 		code := `
 		var result = [];
@@ -216,11 +216,14 @@ func getPosts(settings AppSettings, publicID string) {
 		if err != nil {
 			fmt.Println(err, 3)
 		}
-
+		for _, val := range p.Response { //TODO: save data in database
+			if len(val.Items) == 0 {
+				finished = true
+				break
+			}
+		}
 		offset += totalNumber
 		time.Sleep(250 * time.Millisecond)
-		break //TODO: make correct loop finish
-
 	}
 	print("Done\n")
 }
