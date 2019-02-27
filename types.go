@@ -93,28 +93,18 @@ type Post struct {
 	Text        string       `json:"text"`
 	IsPinned    int          `json:"is_pinned"`
 	Attachments []Attachment `json:"attachments"`
-	PostSource  struct {
-		Type string `json:"type"`
-	} `json:"post_source"`
-	Comments struct {
-		Count         int  `json:"count"`
-		CanPost       int  `json:"can_post"`
-		GroupsCanPost bool `json:"groups_can_post"`
+	Comments    struct {
+		Count int `json:"count"`
 	} `json:"comments"`
 	Likes struct {
-		Count      int `json:"count"`
-		UserLikes  int `json:"user_likes"`
-		CanLike    int `json:"can_like"`
-		CanPublish int `json:"can_publish"`
+		Count int `json:"count"`
 	} `json:"likes"`
 	Reposts struct {
-		Count        int `json:"count"`
-		UserReposted int `json:"user_reposted"`
+		Count int `json:"count"`
 	} `json:"reposts"`
 	Views struct {
 		Count int `json:"count"`
 	} `json:"views"`
-	IsFavorite bool `json:"is_favorite"`
 }
 
 //PostsResponse - response struct

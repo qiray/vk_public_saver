@@ -81,6 +81,34 @@ func dbExample() {
 
 }
 
+func initDataBase(filepath string) {
+	db, err := sql.Open("sqlite3", filepath)
+	checkErr(err)
+
+	initstring := `
+		CREATE TABLE IF NOT EXISTS userinfo (
+			id INTEGER,
+			from_id INTEGER,
+			owner_id INTEGER,
+			date INTEGER,
+			marked_as_ads INTEGER,
+			post_type TEXT,
+			text TEXT,
+			is_pinned INTEGER,
+			comments_count INTEGER,
+			likes_count INTEGER,
+			reposts_count INTEGER,
+			views_count INTEGER,
+			PRIMARY KEY (id, from_id)
+		);
+	`
+	//TODO: add attachments
+
+	stmt, err := db.Prepare(initstring)
+	checkErr(err)
+	stmt.Exec()
+}
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
