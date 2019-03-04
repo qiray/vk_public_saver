@@ -86,10 +86,11 @@ func initDataBase(filepath string) {
 	checkErr(err)
 
 	initstring := `
-		CREATE TABLE IF NOT EXISTS userinfo (
+		CREATE TABLE IF NOT EXISTS posts (
 			id INTEGER,
 			from_id INTEGER,
 			owner_id INTEGER,
+			signer_id INTEGER,
 			date INTEGER,
 			marked_as_ads INTEGER,
 			post_type TEXT,
@@ -107,6 +108,10 @@ func initDataBase(filepath string) {
 	stmt, err := db.Prepare(initstring)
 	checkErr(err)
 	stmt.Exec()
+}
+
+func savePost(filepath string) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+
 }
 
 func checkErr(err error) {

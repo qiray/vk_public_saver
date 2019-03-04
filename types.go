@@ -46,27 +46,17 @@ type Attachment struct {
 		Photo604 string `json:"photo_604"`
 	} `json:"posted_photo"`
 	Video struct {
-		ID             int    `json:"id"`
-		OwnerID        int    `json:"owner_id"`
-		Title          string `json:"title"`
-		Duration       int    `json:"duration"`
-		Description    string `json:"description"`
-		Date           int    `json:"date"`
-		Comments       int    `json:"comments"`
-		Views          int    `json:"views"`
-		Width          int    `json:"width"`
-		Height         int    `json:"height"`
-		Photo130       string `json:"photo_130"`
-		Photo320       string `json:"photo_320"`
-		Photo800       string `json:"photo_800"`
-		IsFavorite     bool   `json:"is_favorite"`
-		AccessKey      string `json:"access_key"`
-		FirstFrame320  string `json:"first_frame_320"`
-		FirstFrame160  string `json:"first_frame_160"`
-		FirstFrame130  string `json:"first_frame_130"`
-		FirstFrame1280 string `json:"first_frame_1280"`
-		FirstFrame800  string `json:"first_frame_800"`
-		CanAdd         int    `json:"can_add"`
+		ID          int    `json:"id"`
+		OwnerID     int    `json:"owner_id"`
+		Title       string `json:"title"`
+		Duration    int    `json:"duration"`
+		Description string `json:"description"`
+		Date        int    `json:"date"`
+		Comments    int    `json:"comments"`
+		Views       int    `json:"views"`
+		Width       int    `json:"width"`
+		Height      int    `json:"height"`
+		AccessKey   string `json:"access_key"`
 	} `json:"video"`
 	Audio struct {
 		ID         int    `json:"id"`
@@ -87,6 +77,7 @@ type Post struct {
 	ID          int          `json:"id"`
 	FromID      int          `json:"from_id"`
 	OwnerID     int          `json:"owner_id"`
+	SignerID    int          `json:"signer_id"`
 	Date        int          `json:"date"`
 	MarkedAsAds int          `json:"marked_as_ads"`
 	PostType    string       `json:"post_type"`

@@ -47,6 +47,8 @@ func main() {
 
 	_ = login(&settings)
 	print(settings.token, "\n")
+	dbPath := "./data.db"
+	initDataBase(dbPath)
 	getPosts(settings, "-89009548")
 	// dbExample()
 }
