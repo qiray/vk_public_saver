@@ -1,11 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -155,22 +155,7 @@ func loadCookies(filepath string, jar *cookiejar.Jar) {
 	}
 }
 
-func wallGet(settings AppSettings) {
-	path := "https://api.vk.com/method/wall.get?owner_id=-89009548&v=" + settings.APIVersion + "&access_token=" + settings.token
-	resp, err := settings.client.Get(path)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	responseData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	responseString := string(responseData)
-	fmt.Println(responseString)
-}
-
-func getPosts(settings AppSettings, publicID string) {
+func getPosts(db *sql.DB, settings AppSettings, publicID string) {
 	count := 50
 	offset := 0
 	pertime := 20
@@ -216,6 +201,7 @@ func getPosts(settings AppSettings, publicID string) {
 		if err != nil {
 			fmt.Println(err, 3)
 		}
+		savePosts(db, p)
 		for _, val := range p.Response { //TODO: save data in database
 			if len(val.Items) == 0 {
 				finished = true

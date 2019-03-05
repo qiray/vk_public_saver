@@ -81,7 +81,7 @@ func dbExample() {
 
 }
 
-func initDataBase(filepath string) {
+func initDataBase(filepath string) *sql.DB {
 	db, err := sql.Open("sqlite3", filepath)
 	checkErr(err)
 
@@ -108,10 +108,42 @@ func initDataBase(filepath string) {
 	stmt, err := db.Prepare(initstring)
 	checkErr(err)
 	stmt.Exec()
+	return db
 }
 
-func savePost(filepath string) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+func savePosts(db *sql.DB, p PostsResponse) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+	insertstring := `
+		INSERT INTO posts (
+			id,
+			from_id,
+			owner_id,
+			signer_id,
+			date,
+			marked_as_ads,
+			post_type,
+			text,
+			is_pinned,
+			comments_count,
+			likes_count,
+			reposts_count,
+			views_count
+		) VALUES 
+	`
+	fmt.Println(insertstring)
+	// values := []interface{}{}
 
+	// // for _, row := range data {
+	// // 	insertstring += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
+	// // 	values = append(values, row["v1"], row["v2"], row["v3"])
+	// // }
+	// //trim the last ,
+	// insertstring = insertstring[0 : len(insertstring)-2]
+	// //prepare the statement
+	// stmt, _ := db.Prepare(insertstring)
+
+	// //format all vals at once
+	// res, _ := stmt.Exec(values...)
+	// fmt.Println(res)
 }
 
 func checkErr(err error) {
