@@ -103,8 +103,54 @@ func initDataBase(filepath string) *sql.DB {
 			views_count INTEGER,
 			PRIMARY KEY (id, from_id)
 		);
+
+		CREATE TABLE IF NOT EXISTS attachments (
+			type TEXT,
+			id INTEGER,
+			owner_id INTEGER,
+			PRIMARY KEY (id, type)
+		);
+
+		CREATE TABLE IF NOT EXISTS photos (
+			id INTEGER PRIMARY KEY,
+			album_id INTEGER,
+			user_id INTEGER,
+			text TEXT,
+			date INTEGER,
+			access_key TEXT
+		);
+
+		CREATE TABLE IF NOT EXISTS posted_photos (
+			id INTEGER PRIMARY KEY,
+			photo_130 TEXT,
+			photo_604 TEXT
+		);
+
+		CREATE TABLE IF NOT EXISTS videos (
+			id INTEGER PRIMARY KEY,
+			title TEXT,
+			duration INTEGER,
+			description TEXT,
+			date INTEGER,
+			comments INTEGER,
+			views INTEGER,
+			width INTEGER,
+			height INTEGER,
+			access_key TEXT
+		);
+
+		CREATE TABLE IF NOT EXISTS audios (
+			id INTEGER PRIMARY KEY,
+			title TEXT,
+			artist TEXT,
+			duration INTEGER,
+			date INTEGER,
+			album_id INTEGER,
+			is_hq INTEGER,
+			track_code TEXT,
+			is_explicit INTEGER
+		);
 	`
-	//TODO: add attachments
 
 	stmt, err := db.Prepare(initstring)
 	checkErr(err)
@@ -141,6 +187,7 @@ func savePosts(db *sql.DB, items []Post) {
 		values = append(values, item.ID, item.FromID, item.OwnerID, item.SignerID,
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
 			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
+		//TODO: save attachments
 	}
 
 	insertstring = strings.TrimSuffix(insertstring, ",") //trim the last comma
@@ -152,7 +199,7 @@ func savePosts(db *sql.DB, items []Post) {
 	checkErr(err)
 }
 
-func savePostsResponse(db *sql.DB, p PostsResponse) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+func savePostsResponse(db *sql.DB, p PostsResponse) {
 
 	for _, val := range p.Response {
 		savePosts(db, val.Items)
