@@ -30,7 +30,6 @@ type Attachment struct {
 		UserID    int    `json:"user_id"`
 		Text      string `json:"text"`
 		Date      int    `json:"date"`
-		PostID    int    `json:"post_id"`
 		AccessKey string `json:"access_key"`
 	} `json:"photo"`
 	PostedPhoto struct {
