@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -111,9 +112,9 @@ func initDataBase(filepath string) *sql.DB {
 	return db
 }
 
-func savePosts(db *sql.DB, p PostsResponse) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+func savePosts(db *sql.DB, items []Post) {
 	insertstring := `
-		INSERT INTO posts (
+		INSERT OR IGNORE INTO posts (
 			id,
 			from_id,
 			owner_id,
@@ -129,21 +130,34 @@ func savePosts(db *sql.DB, p PostsResponse) { //https://stackoverflow.com/questi
 			views_count
 		) VALUES 
 	`
-	fmt.Println(insertstring)
-	// values := []interface{}{}
+	values := []interface{}{}
 
-	// // for _, row := range data {
-	// // 	insertstring += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
-	// // 	values = append(values, row["v1"], row["v2"], row["v3"])
-	// // }
-	// //trim the last ,
-	// insertstring = insertstring[0 : len(insertstring)-2]
-	// //prepare the statement
-	// stmt, _ := db.Prepare(insertstring)
+	if len(items) == 0 {
+		return
+	}
 
-	// //format all vals at once
-	// res, _ := stmt.Exec(values...)
-	// fmt.Println(res)
+	for _, item := range items {
+		insertstring += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
+		values = append(values, item.ID, item.FromID, item.OwnerID, item.SignerID,
+			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
+			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
+	}
+
+	insertstring = strings.TrimSuffix(insertstring, ",") //trim the last comma
+
+	stmt, err := db.Prepare(insertstring) //prepare the statement
+	checkErr(err)
+
+	_, err = stmt.Exec(values...) //format all vals at once
+	checkErr(err)
+}
+
+func savePostsResponse(db *sql.DB, p PostsResponse) { //https://stackoverflow.com/questions/21108084/golang-mysql-insert-multiple-data-at-once
+
+	for _, val := range p.Response {
+		savePosts(db, val.Items)
+	}
+
 }
 
 func checkErr(err error) {

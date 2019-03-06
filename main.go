@@ -25,9 +25,12 @@ func setCredentials(settings *AppSettings) {
 		return
 	}
 	password := string(bytePassword)
+	fmt.Print("Enter public or user id: ")
+	source, _ := reader.ReadString('\n')
 	settings.userdata = make(map[string]string)
 	settings.userdata["email"] = strings.TrimSpace(username)
 	settings.userdata["pass"] = strings.TrimSpace(password)
+	settings.userdata["source"] = strings.TrimSpace(source)
 }
 
 func main() {
@@ -49,6 +52,6 @@ func main() {
 	print(settings.token, "\n")
 	dbPath := "./data.db"
 	db := initDataBase(dbPath)
-	getPosts(db, settings, "-89009548")
+	getPosts(db, settings)
 	// dbExample()
 }

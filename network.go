@@ -155,13 +155,14 @@ func loadCookies(filepath string, jar *cookiejar.Jar) {
 	}
 }
 
-func getPosts(db *sql.DB, settings AppSettings, publicID string) {
+func getPosts(db *sql.DB, settings AppSettings) {
 	count := 50
 	offset := 0
 	pertime := 20
 	totalNumber := count * pertime
 	numberOfPosts := 2147483647
 	finished := false
+	publicID := settings.userdata["source"]
 
 	for !finished {
 		print("Saving posts, offset: ", offset, "\n")
@@ -201,8 +202,8 @@ func getPosts(db *sql.DB, settings AppSettings, publicID string) {
 		if err != nil {
 			fmt.Println(err, 3)
 		}
-		savePosts(db, p)
-		for _, val := range p.Response { //TODO: save data in database
+		savePostsResponse(db, p)
+		for _, val := range p.Response {
 			if len(val.Items) == 0 {
 				finished = true
 				break
