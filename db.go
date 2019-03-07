@@ -108,7 +108,8 @@ func initDataBase(filepath string) *sql.DB {
 			type TEXT,
 			id INTEGER,
 			owner_id INTEGER,
-			PRIMARY KEY (id, type)
+			post_id INTEGER,
+			PRIMARY KEY (id, type, post_id)
 		);
 
 		CREATE TABLE IF NOT EXISTS photos (
@@ -159,7 +160,7 @@ func initDataBase(filepath string) *sql.DB {
 }
 
 func savePosts(db *sql.DB, items []Post) {
-	insertstring := `
+	insertposts := `
 		INSERT OR IGNORE INTO posts (
 			id,
 			from_id,
@@ -176,26 +177,38 @@ func savePosts(db *sql.DB, items []Post) {
 			views_count
 		) VALUES 
 	`
-	values := []interface{}{}
+	insertattachments := `
+		INSERT OR IGNORE INTO attachments (
+			type,
+			id,
+			owner_id,
+			post_id
+		) VALUES 
+	`
+	postsvalues := []interface{}{}
+	attachmentsvalues := []interface{}{}
 
 	if len(items) == 0 {
 		return
 	}
 
 	for _, item := range items {
-		insertstring += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
-		values = append(values, item.ID, item.FromID, item.OwnerID, item.SignerID,
+		insertposts += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
+		postsvalues = append(postsvalues, item.ID, item.FromID, item.OwnerID, item.SignerID,
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
 			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
-		//TODO: save attachments
+		if len(item.Attachments) > 0 {
+			insertattachments += "(?, ?, ?, ?),"
+			attachmentsvalues = append(attachmentsvalues) //TODO: save attachments
+		}
 	}
 
-	insertstring = strings.TrimSuffix(insertstring, ",") //trim the last comma
+	insertposts = strings.TrimSuffix(insertposts, ",") //trim the last comma
 
-	stmt, err := db.Prepare(insertstring) //prepare the statement
+	stmt, err := db.Prepare(insertposts) //prepare the statement
 	checkErr(err)
 
-	_, err = stmt.Exec(values...) //format all vals at once
+	_, err = stmt.Exec(postsvalues...) //format all vals at once
 	checkErr(err)
 }
 
