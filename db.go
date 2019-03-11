@@ -11,6 +11,7 @@ import (
 
 func dbExample() {
 	db, err := sql.Open("sqlite3", "./test.db")
+	defer db.Close()
 	checkErr(err)
 
 	initstring := `CREATE TABLE IF NOT EXISTS userinfo (
@@ -82,12 +83,23 @@ func dbExample() {
 
 }
 
+func closeDatabase(db *sql.DB) {
+	db.Close()
+}
+
+func createTable(db *sql.DB, initstring string) {
+	stmt, err := db.Prepare(initstring)
+	checkErr(err)
+	_, err = stmt.Exec()
+	checkErr(err)
+}
+
 func initDataBase(filepath string) *sql.DB {
 	db, err := sql.Open("sqlite3", filepath)
 	checkErr(err)
 
-	initstring := `
-		CREATE TABLE IF NOT EXISTS posts (
+	createTable(db,
+		`CREATE TABLE IF NOT EXISTS posts (
 			id INTEGER,
 			from_id INTEGER,
 			owner_id INTEGER,
@@ -102,64 +114,26 @@ func initDataBase(filepath string) *sql.DB {
 			reposts_count INTEGER,
 			views_count INTEGER,
 			PRIMARY KEY (id, from_id)
-		);
+		);`)
 
-		CREATE TABLE IF NOT EXISTS attachments (
+	createTable(db,
+		`CREATE TABLE IF NOT EXISTS attachments (
 			type TEXT,
 			id INTEGER,
 			owner_id INTEGER,
 			post_id INTEGER,
+			url TEXT,
+			additional_info text,
 			PRIMARY KEY (id, type, post_id)
-		);
+		);`)
 
-		CREATE TABLE IF NOT EXISTS photos (
-			id INTEGER PRIMARY KEY,
-			album_id INTEGER,
-			user_id INTEGER,
-			text TEXT,
-			date INTEGER,
-			access_key TEXT
-		);
-
-		CREATE TABLE IF NOT EXISTS posted_photos (
-			id INTEGER PRIMARY KEY,
-			photo_130 TEXT,
-			photo_604 TEXT
-		);
-
-		CREATE TABLE IF NOT EXISTS videos (
-			id INTEGER PRIMARY KEY,
-			title TEXT,
-			duration INTEGER,
-			description TEXT,
-			date INTEGER,
-			comments INTEGER,
-			views INTEGER,
-			width INTEGER,
-			height INTEGER,
-			access_key TEXT
-		);
-
-		CREATE TABLE IF NOT EXISTS audios (
-			id INTEGER PRIMARY KEY,
-			title TEXT,
-			artist TEXT,
-			duration INTEGER,
-			date INTEGER,
-			album_id INTEGER,
-			is_hq INTEGER,
-			track_code TEXT,
-			is_explicit INTEGER
-		);
-	`
-
-	stmt, err := db.Prepare(initstring)
-	checkErr(err)
-	stmt.Exec()
 	return db
 }
 
 func savePosts(db *sql.DB, items []Post) {
+	if len(items) == 0 {
+		return
+	}
 	insertposts := `
 		INSERT OR IGNORE INTO posts (
 			id,
@@ -177,47 +151,88 @@ func savePosts(db *sql.DB, items []Post) {
 			views_count
 		) VALUES 
 	`
-	insertattachments := `
+	insertattachmentsTemplate := `
 		INSERT OR IGNORE INTO attachments (
 			type,
 			id,
-			owner_id,
-			post_id
+			post_id,
+			url,
+			additional_info
 		) VALUES 
 	`
+
+	insertattachments := insertattachmentsTemplate
 	postsvalues := []interface{}{}
 	attachmentsvalues := []interface{}{}
+	count := 0
 
-	if len(items) == 0 {
-		return
-	}
-
+	tx, err := db.Begin() //start transaction
+	checkErr(err)
 	for _, item := range items {
 		insertposts += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
 		postsvalues = append(postsvalues, item.ID, item.FromID, item.OwnerID, item.SignerID,
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
 			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
 		if len(item.Attachments) > 0 {
-			insertattachments += "(?, ?, ?, ?),"
-			attachmentsvalues = append(attachmentsvalues) //TODO: save attachments
+			for _, attachment := range item.Attachments {
+				count++
+				insertattachments += "(?, ?, ?, ?, ?),"
+				if attachment.Type == "photo" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.Photo.ID, item.ID, "photo"+
+							string(attachment.Photo.OwnerID)+"_"+string(attachment.Photo.ID),
+						attachment.Photo.Text)
+				} else if attachment.Type == "posted_photo" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.PostedPhoto.ID, item.ID, attachment.PostedPhoto.Photo604, "")
+				} else if attachment.Type == "video" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.Video.ID, item.ID, "photo"+
+							string(attachment.Video.OwnerID)+"_"+string(attachment.Video.ID),
+						attachment.Video.Title)
+				} else if attachment.Type == "audio" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.Audio.ID, item.ID, attachment.Audio.URL,
+						attachment.Audio.Artist+"-"+attachment.Audio.Title)
+				} else if attachment.Type == "doc" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.Doc.ID, item.ID, attachment.Doc.URL, attachment.Doc.Title)
+				} else {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						item.ID, item.ID, "", "")
+					//TODO: add other type
+				}
+
+				if count >= 500 {
+					execInserts(tx, insertattachments, attachmentsvalues)
+					count = 0
+					insertattachments = insertattachmentsTemplate
+					attachmentsvalues = []interface{}{}
+				}
+			}
+
 		}
 	}
 
-	insertposts = strings.TrimSuffix(insertposts, ",") //trim the last comma
+	execInserts(tx, insertposts, postsvalues)
+	if count > 0 {
+		execInserts(tx, insertattachments, attachmentsvalues)
+	}
+	checkErr(tx.Commit()) //commit transaction
+}
 
-	stmt, err := db.Prepare(insertposts) //prepare the statement
+func execInserts(tx *sql.Tx, insertString string, values []interface{}) {
+	insertString = strings.TrimSuffix(insertString, ",") //trim the last comma
+	stmt, err := tx.Prepare(insertString)                //prepare the statement
 	checkErr(err)
-
-	_, err = stmt.Exec(postsvalues...) //format all vals at once
+	_, err = stmt.Exec(values...) //format all values at once
 	checkErr(err)
 }
 
 func savePostsResponse(db *sql.DB, p PostsResponse) {
-
 	for _, val := range p.Response {
 		savePosts(db, val.Items)
 	}
-
 }
 
 func checkErr(err error) {

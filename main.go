@@ -53,5 +53,5 @@ func main() {
 	dbPath := "./data.db"
 	db := initDataBase(dbPath)
 	getPosts(db, settings)
-	// dbExample()
+	closeDatabase(db)
 }

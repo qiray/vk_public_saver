@@ -4,7 +4,6 @@ import "net/http"
 
 //TODO: read https://vk.com/dev/attachments_w for more info about attachments
 /*
-5. Документ (type = doc)
 6. Граффити (type = graffiti)
 7. Ссылка (type = link)
 8. Заметка (type = note)
@@ -56,6 +55,7 @@ type Attachment struct {
 		OwnerID    int    `json:"owner_id"`
 		Artist     string `json:"artist"`
 		Title      string `json:"title"`
+		URL        string `json:"url"`
 		Duration   int    `json:"duration"`
 		Date       int    `json:"date"`
 		AlbumID    int    `json:"album_id"`
@@ -63,6 +63,16 @@ type Attachment struct {
 		TrackCode  string `json:"track_code"`
 		IsExplicit bool   `json:"is_explicit"`
 	} `json:"audio"`
+	Doc struct {
+		ID      int    `json:"id"`
+		OwnerID int    `json:"owner_id"`
+		Size    int    `json:"size"`
+		Title   string `json:"title"`
+		Date    int    `json:"date"`
+		Type    int    `json:"type"`
+		Ext     string `json:"ext"`
+		URL     string `json:"url"`
+	} `json:"doc"`
 }
 
 //Post - type for vk post structure
