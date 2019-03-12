@@ -5,7 +5,6 @@ import "net/http"
 //TODO: read https://vk.com/dev/attachments_w for more info about attachments
 /*
 6. Граффити (type = graffiti)
-7. Ссылка (type = link)
 8. Заметка (type = note)
 9. Контент приложения (type = app)
 10. Опрос (type = poll)
@@ -73,6 +72,12 @@ type Attachment struct {
 		Ext     string `json:"ext"`
 		URL     string `json:"url"`
 	} `json:"doc"`
+	Link struct {
+		URL         string `json:"url"`
+		Title       string `json:"title"`
+		Caption     string `json:"caption"`
+		Description string `json:"description"`
+	} `json:"link"`
 }
 
 //Post - type for vk post structure

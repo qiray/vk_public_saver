@@ -174,7 +174,7 @@ func savePosts(db *sql.DB, items []Post) {
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
 			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
 		if len(item.Attachments) > 0 {
-			for _, attachment := range item.Attachments {
+			for i, attachment := range item.Attachments {
 				count++
 				insertattachments += "(?, ?, ?, ?, ?),"
 				if attachment.Type == "photo" {
@@ -197,6 +197,9 @@ func savePosts(db *sql.DB, items []Post) {
 				} else if attachment.Type == "doc" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						attachment.Doc.ID, item.ID, attachment.Doc.URL, attachment.Doc.Title)
+				} else if attachment.Type == "link" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						i, item.ID, attachment.Link.URL, attachment.Link.Title+":"+attachment.Link.Caption)
 				} else {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						item.ID, item.ID, "", "")
