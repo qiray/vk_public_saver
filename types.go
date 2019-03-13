@@ -2,12 +2,11 @@ package main
 
 import "net/http"
 
-//TODO: read https://vk.com/dev/attachments_w for more info about attachments
+//Read https://vk.com/dev/attachments_w for more info about attachments
 /*
 6. Граффити (type = graffiti)
 8. Заметка (type = note)
 9. Контент приложения (type = app)
-10. Опрос (type = poll)
 11. Вики-страница (type = page)
 12. Альбом с фотографиями (type=album)
 13. Список фотографий (type=photos_list)
@@ -78,6 +77,12 @@ type Attachment struct {
 		Caption     string `json:"caption"`
 		Description string `json:"description"`
 	} `json:"link"`
+	Poll struct {
+		ID       int    `json:"id"`
+		OwnerID  int    `json:"owner_id"`
+		Question string `json:"question"`
+		Votes    int    `json:"votes"`
+	} `json:"poll"`
 }
 
 //Post - type for vk post structure

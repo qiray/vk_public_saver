@@ -199,11 +199,17 @@ func savePosts(db *sql.DB, items []Post) {
 						attachment.Doc.ID, item.ID, attachment.Doc.URL, attachment.Doc.Title)
 				} else if attachment.Type == "link" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
-						i, item.ID, attachment.Link.URL, attachment.Link.Title+":"+attachment.Link.Caption)
+						i, item.ID, attachment.Link.URL, attachment.Link.Title+":"+
+							attachment.Link.Caption)
+				} else if attachment.Type == "poll" {
+					attachmentsvalues = append(attachmentsvalues, attachment.Type,
+						attachment.Poll.ID, item.ID, "wall"+string(attachment.Poll.OwnerID)+"_"+
+							string(item.ID), attachment.Poll.Question)
 				} else {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						item.ID, item.ID, "", "")
-					//TODO: add other type
+					// fmt.Println(attachment.Type)
+					//Add other type (maybe)
 				}
 
 				if count >= 500 {
