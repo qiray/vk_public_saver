@@ -129,3 +129,10 @@ type AppSettings struct {
 	client      *http.Client
 	token       string
 }
+
+//Version - struct for version info
+type Version struct {
+	Major int
+	Minor int
+	Build int
+}

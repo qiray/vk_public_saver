@@ -11,6 +11,12 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+var version = Version{1, 0, 0}
+
+func getVersion() string {
+	return fmt.Sprintf("%d,%d,%d", version.Major, version.Minor, version.Build)
+}
+
 func setCredentials(settings *AppSettings) {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -50,7 +56,7 @@ func main() {
 
 	_ = login(&settings)
 	print(settings.token, "\n")
-	dbPath := "./data.db"
+	dbPath := fmt.Sprintf("./data_%s.db", settings.userdata["source"])
 	db := initDataBase(dbPath)
 	getPosts(db, settings)
 	closeDatabase(db)
