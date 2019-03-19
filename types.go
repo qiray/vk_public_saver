@@ -1,7 +1,5 @@
 package main
 
-import "net/http"
-
 //Read https://vk.com/dev/attachments_w for more info about attachments
 /*
 6. Граффити (type = graffiti)
@@ -121,13 +119,11 @@ type PostsResponse struct {
 
 //AppSettings - struct for application settings
 type AppSettings struct {
-	AppID       string `json:"app_id"`
-	Settings    string `json:"settings"`
-	RedirectURL string `json:"redirect_url"`
-	APIVersion  string `json:"api_version"`
-	userdata    map[string]string
-	client      *http.Client
-	token       string
+	AppID      string `json:"app_id"`
+	Settings   string `json:"settings"`
+	APIVersion string `json:"api_version"`
+	userdata   map[string]string
+	token      string
 }
 
 //Version - struct for version info

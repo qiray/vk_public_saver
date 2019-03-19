@@ -22,7 +22,6 @@ func loadSettings(settingsFile string) (AppSettings, error) {
 	data, err := readFile(settingsFile)
 	var settings = AppSettings{}
 	if err != nil {
-		fmt.Println(err)
 		return settings, err
 	}
 	err = json.Unmarshal(data, &settings)
@@ -31,9 +30,12 @@ func loadSettings(settingsFile string) (AppSettings, error) {
 
 func loadJSONFileMap(filepath string) (map[string]string, error) {
 	result := make(map[string]string)
-	data, _ := readFile(filepath)
+	data, err := readFile(filepath)
+	if err != nil {
+		return result, err
+	}
 	var objmap map[string]*json.RawMessage
-	err := json.Unmarshal(data, &objmap)
+	err = json.Unmarshal(data, &objmap)
 	if err != nil {
 		fmt.Println(err)
 		return result, err

@@ -71,7 +71,6 @@ TODO: write it
 
 ## Thanks
 
-TODO: This project uses EasyVK package for login  
-https://github.com/Vorkytaka/easyvk-go
+This project uses EasyVK package (https://github.com/Vorkytaka/easyvk-go) for login in vk.com and golang.org/x/crypto/ssh/terminal for password input.
 
-golang.org/x/crypto/ssh/terminal
+

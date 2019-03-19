@@ -48,7 +48,11 @@ func main() {
 		os.Exit(1)
 	}
 	if *userdataFlag {
-		userdata, _ := loadJSONFileMap("userdata.json")
+		userdata, err := loadJSONFileMap("userdata.json")
+		if err != nil {
+			fmt.Println("Userdata load failed. Closing...")
+			os.Exit(1)
+		}
 		settings.userdata = userdata
 	} else {
 		setCredentials(&settings)

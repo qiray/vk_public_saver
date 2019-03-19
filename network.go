@@ -11,6 +11,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/vorkytaka/easyvk-go/easyvk"
 )
 
 func getRequest(url string) ([]byte, error) {
@@ -53,6 +55,16 @@ func loadCookies(filepath string, jar *cookiejar.Jar) {
 	}
 }
 
+func login(settings *AppSettings) bool {
+	vk, err := easyvk.WithAuth(settings.userdata["email"], settings.userdata["pass"], settings.AppID, settings.Settings)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	settings.token = vk.AccessToken
+	return true
+}
+
 func getPosts(db *sql.DB, settings AppSettings) {
 	count := 50
 	offset := 0
@@ -61,6 +73,7 @@ func getPosts(db *sql.DB, settings AppSettings) {
 	numberOfPosts := 2147483647
 	finished := false
 	publicID := settings.userdata["source"]
+	client := &http.Client{}
 
 	for !finished {
 		print("Saving posts, offset: ", offset, "\n")
@@ -83,7 +96,7 @@ func getPosts(db *sql.DB, settings AppSettings) {
 		numberOfPosts -= totalNumber
 		code = url.QueryEscape(code)
 		path := "https://api.vk.com/method/execute?code=" + code + "&v=" + settings.APIVersion + "&access_token=" + settings.token
-		resp, err := settings.client.Get(path)
+		resp, err := client.Get(path)
 		if err != nil {
 			fmt.Println(err, 1)
 			return
