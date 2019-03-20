@@ -120,7 +120,6 @@ type PostsResponse struct {
 //AppSettings - struct for application settings
 type AppSettings struct {
 	AppID      string `json:"app_id"`
-	Settings   string `json:"settings"`
 	APIVersion string `json:"api_version"`
 	userdata   map[string]string
 	token      string
