@@ -11,10 +11,16 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var version = Version{1, 0, 0}
+var version = Version{"vk_public_saver", 1, 0, 0}
 
 func getVersion() string {
-	return fmt.Sprintf("%d,%d,%d", version.Major, version.Minor, version.Build)
+	return fmt.Sprintf("%d.%d.%d", version.Major, version.Minor, version.Build)
+}
+
+func getAboutInfo() string {
+	return "\n" + version.Name + " " + getVersion() + " Copyright (C) 2019 Yaroslav Zotov.\n" +
+		"This program comes with ABSOLUTELY NO WARRANTY.\n" +
+		"This is free software under GNU GPL3; see the source for copying conditions\n"
 }
 
 func setCredentials(settings *AppSettings) {
@@ -41,7 +47,12 @@ func setCredentials(settings *AppSettings) {
 
 func main() {
 	userdataFlag := flag.Bool("userdata", false, "Use userdata.json for email and pass")
+	aboutFlag := flag.Bool("about", false, "Show about info")
 	flag.Parse()
+	if *aboutFlag {
+		fmt.Println(getAboutInfo())
+		return
+	}
 	settings, err := loadSettings("settings.json")
 	if err != nil {
 		fmt.Println("Settings load failed. Closing...")

@@ -127,6 +127,7 @@ type AppSettings struct {
 
 //Version - struct for version info
 type Version struct {
+	Name  string
 	Major int
 	Minor int
 	Build int
