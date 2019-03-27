@@ -65,7 +65,8 @@ func setCredentials(settings *AppSettings) {
 }
 
 func main() {
-	userdataFlag := flag.Bool("userdata", false, "Use userdata.json for email and pass")
+	userdataFlag := flag.Bool("userdata", false, "Use userdata.json for email and password")
+	tokenFlag := flag.Bool("token", false, "Use token instead of email and password")
 	aboutFlag := flag.Bool("about", false, "Show about info")
 	flag.Parse()
 	if *aboutFlag {
@@ -84,8 +85,12 @@ func main() {
 			os.Exit(1)
 		}
 		settings.userdata = userdata
-	} else {
+	} else if !*tokenFlag {
 		setCredentials(&settings)
+	} else {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter token: ")
+		settings.token, _ = reader.ReadString('\n')
 	}
 
 	_ = login(&settings)
