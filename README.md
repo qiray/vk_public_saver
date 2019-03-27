@@ -47,12 +47,20 @@ This project is a console application. To run it type:
 go run *.go #or run as a script if you have Golang environment
 ```
 
-There are 2 modes:
+There are 3 modes:
 
-- user input, where program asks about username, password and public or user id;
-- json input, where program uses json file userdata.json.
+- user login/password input, where program asks about username, password and public or user id to save it's wall data;
+- user token input, where program asks about token and public or user id to save it's wall data;
+- json input, where program uses json file userdata.json;
 
-The first mode is the default one. For using json input run vk_public_saver with --userdata option. For example:
+The first mode is the default one. For token input run
+
+```bash
+./vk_public_saver --token
+
+```
+
+For using json input run vk_public_saver with --userdata option. For example:
 
 ```bash
 ./vk_public_saver --userdata

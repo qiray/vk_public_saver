@@ -42,21 +42,28 @@ func getAboutInfo() string {
 		"This is free software under GNU GPL3; see the source for copying conditions\n"
 }
 
-func setCredentials(settings *AppSettings) {
+func setCredentials(settings *AppSettings, tokenFlag bool) {
 	reader := bufio.NewReader(os.Stdin)
+	username, password := "", ""
 
-	fmt.Print("Enter Username: ")
-	username, _ := reader.ReadString('\n')
+	if tokenFlag {
+		fmt.Print("Enter token: ")
+		settings.token, _ = reader.ReadString('\n')
+	} else {
+		fmt.Print("Enter Username: ")
+		username, _ = reader.ReadString('\n')
 
-	fmt.Print("Enter Password: ")
-	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
-	print("\n") //Add newline
-	if err != nil {
-		fmt.Println("Failed to get password")
-		return
+		fmt.Print("Enter Password: ")
+		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+		print("\n") //Add newline
+		if err != nil {
+			fmt.Println("Failed to get password")
+			return
+		}
+		password = string(bytePassword)
 	}
-	password := string(bytePassword)
-	fmt.Print("Enter public or user id: ")
+
+	fmt.Print("Enter public or user id to save it's wall data: ")
 	source, _ := reader.ReadString('\n')
 	settings.userdata = make(map[string]string)
 	settings.userdata["email"] = strings.TrimSpace(username)
@@ -85,12 +92,8 @@ func main() {
 			os.Exit(1)
 		}
 		settings.userdata = userdata
-	} else if !*tokenFlag {
-		setCredentials(&settings)
 	} else {
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter token: ")
-		settings.token, _ = reader.ReadString('\n')
+		setCredentials(&settings, *tokenFlag)
 	}
 
 	_ = login(&settings)

@@ -75,7 +75,7 @@ func loadCookies(filepath string, jar *cookiejar.Jar) {
 }
 
 func login(settings *AppSettings) bool {
-	vk, err := easyvk.WithAuth(settings.userdata["email"], settings.userdata["pass"], settings.AppID, "wall,users,groups")
+	vk, err := easyvk.WithAuth(settings.userdata["email"], settings.userdata["pass"], settings.AppID, "wall")
 	if err != nil {
 		fmt.Println(err)
 		return false
