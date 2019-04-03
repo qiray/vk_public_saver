@@ -56,6 +56,7 @@ func initDataBase(filepath string) *sql.DB {
 			likes_count INTEGER,
 			reposts_count INTEGER,
 			views_count INTEGER,
+			attachments_count INTEGER,
 			PRIMARY KEY (id, from_id)
 		);`)
 
@@ -91,7 +92,8 @@ func savePosts(db *sql.DB, items []Post) {
 			comments_count,
 			likes_count,
 			reposts_count,
-			views_count
+			views_count,
+			attachments_count
 		) VALUES 
 	`
 	insertattachmentsTemplate := `
@@ -112,10 +114,11 @@ func savePosts(db *sql.DB, items []Post) {
 	tx, err := db.Begin() //start transaction
 	checkErr(err)
 	for _, item := range items {
-		insertposts += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
+		insertposts += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
 		postsvalues = append(postsvalues, item.ID, item.FromID, item.OwnerID, item.SignerID,
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
-			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count)
+			item.Comments.Count, item.Likes.Count, item.Reposts.Count, item.Views.Count,
+			len(item.Attachments))
 		if len(item.Attachments) > 0 {
 			for i, attachment := range item.Attachments {
 				count++

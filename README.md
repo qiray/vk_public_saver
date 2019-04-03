@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS posts (
     likes_count INTEGER,
     reposts_count INTEGER,
     views_count INTEGER,
+    attachments_count INTEGER,
     PRIMARY KEY (id, from_id)
 );
 
