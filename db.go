@@ -21,6 +21,7 @@ package main
 
 import (
 	"database/sql"
+	"strconv"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -68,6 +69,7 @@ func initDataBase(filepath string) *sql.DB {
 			post_id INTEGER,
 			url TEXT,
 			additional_info text,
+			additional_info2 text,
 			PRIMARY KEY (id, type, post_id)
 		);`)
 
@@ -102,7 +104,8 @@ func savePosts(db *sql.DB, items []Post) {
 			id,
 			post_id,
 			url,
-			additional_info
+			additional_info,
+			additional_info2
 		) VALUES 
 	`
 
@@ -113,7 +116,7 @@ func savePosts(db *sql.DB, items []Post) {
 
 	tx, err := db.Begin() //start transaction
 	checkErr(err)
-	for _, item := range items {
+	for _, item := range items { //TODO: use additional_info2 for all types
 		insertposts += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?),"
 		postsvalues = append(postsvalues, item.ID, item.FromID, item.OwnerID, item.SignerID,
 			item.Date, item.MarkedAsAds, item.PostType, item.Text, item.IsPinned,
@@ -122,38 +125,38 @@ func savePosts(db *sql.DB, items []Post) {
 		if len(item.Attachments) > 0 {
 			for i, attachment := range item.Attachments {
 				count++
-				insertattachments += "(?, ?, ?, ?, ?),"
+				insertattachments += "(?, ?, ?, ?, ?, ?),"
 				if attachment.Type == "photo" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						attachment.Photo.ID, item.ID, "photo"+
-							string(attachment.Photo.OwnerID)+"_"+string(attachment.Photo.ID),
-						attachment.Photo.Text)
+							strconv.Itoa(attachment.Photo.OwnerID)+"_"+strconv.Itoa(attachment.Photo.ID),
+						attachment.Photo.Text, "")
 				} else if attachment.Type == "posted_photo" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
-						attachment.PostedPhoto.ID, item.ID, attachment.PostedPhoto.Photo604, "")
+						attachment.PostedPhoto.ID, item.ID, attachment.PostedPhoto.Photo604, "", "")
 				} else if attachment.Type == "video" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						attachment.Video.ID, item.ID, "photo"+
-							string(attachment.Video.OwnerID)+"_"+string(attachment.Video.ID),
-						attachment.Video.Title)
+							strconv.Itoa(attachment.Video.OwnerID)+"_"+strconv.Itoa(attachment.Video.ID),
+						attachment.Video.Title, "")
 				} else if attachment.Type == "audio" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						attachment.Audio.ID, item.ID, attachment.Audio.URL,
-						attachment.Audio.Artist+"-"+attachment.Audio.Title)
+						attachment.Audio.Artist+"-"+attachment.Audio.Title, "")
 				} else if attachment.Type == "doc" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
-						attachment.Doc.ID, item.ID, attachment.Doc.URL, attachment.Doc.Title)
+						attachment.Doc.ID, item.ID, attachment.Doc.URL, attachment.Doc.Title, "")
 				} else if attachment.Type == "link" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
 						i, item.ID, attachment.Link.URL, attachment.Link.Title+":"+
-							attachment.Link.Caption)
+							attachment.Link.Caption, "")
 				} else if attachment.Type == "poll" {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
-						attachment.Poll.ID, item.ID, "wall"+string(attachment.Poll.OwnerID)+"_"+
-							string(item.ID), attachment.Poll.Question)
+						attachment.Poll.ID, item.ID, "wall"+strconv.Itoa(attachment.Poll.OwnerID)+"_"+
+							strconv.Itoa(item.ID), attachment.Poll.Question, attachment.Poll.Votes)
 				} else {
 					attachmentsvalues = append(attachmentsvalues, attachment.Type,
-						item.ID, item.ID, "", "")
+						item.ID, item.ID, "", "", "")
 					// fmt.Println(attachment.Type)
 					//Add other type (maybe)
 				}
