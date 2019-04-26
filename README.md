@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS attachments (
 
 This program uses GNU GPL3. For more information see the LICENSE file.
 
-<!-- ## Known usage
+## Known usage
 
-TODO: write it -->
+This tool is used in [vk_public_analyzer](https://github.com/qiray/vk_public_analyzer)
 
 ## Thanks
 
